@@ -3,10 +3,10 @@ package impl
 import (
 	"errors"
 
-	"github.com/asofdate/sso-jwt-auth/utils/logger"
-	"github.com/asofdate/sso-jwt-auth/utils/validator"
 	"github.com/asofdate/sso-core/dao"
 	"github.com/asofdate/sso-core/entity"
+	"github.com/asofdate/sso-jwt-auth/utils/logger"
+	"github.com/asofdate/sso-jwt-auth/utils/validator"
 	"github.com/astaxie/beego/logs"
 	"github.com/hzwy23/dbobj"
 )
