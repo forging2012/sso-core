@@ -9,7 +9,7 @@ import (
 type SsoRemoteServiceDaoImpl struct {
 }
 
-var ssoSql005 = `select service_cd,remote_scheme,remote_host,remote_port from sso_remote_service where service_cd = ?`
+var ssoSql005 = `select service_cd,remote_scheme,remote_host,remote_port,prefix_url from sso_remote_service where service_cd = ?`
 
 func NewSsoRemoteServiceDao() dao.SsoRemoteServiceDao {
 	return &SsoRemoteServiceDaoImpl{}

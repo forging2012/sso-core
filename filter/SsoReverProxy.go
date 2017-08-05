@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"path"
 
-	"github.com/asofdate/sso-jwt-auth/utils/hret"
+	"html/template"
+
 	"github.com/asofdate/sso-core/service/impl"
+	"github.com/asofdate/sso-jwt-auth/utils/hret"
+	"github.com/asofdate/sso-jwt-auth/utils/jwt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/logs"
@@ -35,7 +39,7 @@ func SsoReverProxy(ctx *context.Context) {
 
 		director := func(req *http.Request) {
 			req = ctx.Request
-			req.URL.Path = ssoEntity.RemoteUrl
+			req.URL.Path = path.Join(ssoEntity.PrefixUrl, ssoEntity.RemoteUrl)
 			req.URL.Scheme = ssoEntity.RemoteScheme
 			req.URL.Host = ssoEntity.RemoteHost + ":" + ssoEntity.RemotePort
 		}
@@ -49,6 +53,9 @@ func SsoReverProxy(ctx *context.Context) {
 			ModifyResponse: func(response *http.Response) error {
 				location, err := response.Location()
 				if err == nil {
+					// TODO
+					// 反向代理路发生重定向，
+					// 后台暂时没有处理重定向请求，需要前端自行处理
 					fmt.Println("redirect", location, err)
 				}
 				return nil
@@ -58,6 +65,15 @@ func SsoReverProxy(ctx *context.Context) {
 		// 匹配成功，退出beego路由处理程序
 		ctx.ResponseWriter.Started = true
 	}
-	// TODO
+
+	// 匹配系统默认过滤路由
+	if FilterMatchRoute(ctx.Request.URL.Path) {
+		return
+	}
+
 	// 系统内部路由连接校验
+	if !jwt.CheckToken(ctx.Request ) {
+		hz, _ := template.ParseFiles("./views/sso/disconnect.tpl")
+		hz.Execute(ctx.ResponseWriter, nil)
+	}
 }

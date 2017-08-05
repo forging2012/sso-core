@@ -7,10 +7,10 @@ import (
 
 	"fmt"
 
+	"github.com/asofdate/sso-core/service/impl"
 	"github.com/asofdate/sso-jwt-auth/models"
 	"github.com/asofdate/sso-jwt-auth/utils/hret"
 	"github.com/asofdate/sso-jwt-auth/utils/i18n"
-	"github.com/asofdate/sso-core/service/impl"
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/logs"
 )
@@ -42,7 +42,7 @@ func SysIndexReverProxy(ctx *context.Context) {
 
 	director := func(req *http.Request) {
 		req = ctx.Request
-		req.URL.Path = ssoEntity.RemoteUrl
+		req.URL.Path = ssoEntity.PrefixUrl + ssoEntity.RemoteUrl
 		req.URL.Scheme = ssoEntity.RemoteScheme
 		req.URL.Host = ssoEntity.RemoteHost + ":" + ssoEntity.RemotePort
 	}
@@ -56,10 +56,8 @@ func SysIndexReverProxy(ctx *context.Context) {
 			if err == nil {
 				// TODO
 				// 重定向追踪
-				fmt.Println("重定向，location:", location, "err is:", err)
+				fmt.Println("待完善过程，重定向，location:", location, "err is:", err)
 			}
-
-			// 修改html中内容，允许iframe中打开页面。
 			return nil
 		},
 	}
@@ -98,7 +96,7 @@ func SsoSubsystemMenuReverProxy(ctx *context.Context) {
 
 	director := func(req *http.Request) {
 		req = ctx.Request
-		req.URL.Path = ssoEntity.RemoteUrl
+		req.URL.Path = ssoEntity.PrefixUrl + ssoEntity.RemoteUrl
 		req.URL.Scheme = ssoEntity.RemoteScheme
 		req.URL.Host = ssoEntity.RemoteHost + ":" + ssoEntity.RemotePort
 	}

@@ -5,4 +5,5 @@ type SsoRemoteService struct {
 	RemoteScheme string `json:"remoteScheme"`
 	RemoteHost   string `json:"remoteHost"`
 	RemotePort   string `json:"remotePort"`
+	PrefixUrl    string `json:"prefixUrl"`
 }

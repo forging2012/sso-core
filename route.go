@@ -26,6 +26,11 @@ func Register() {
 	beego.Router("/v1/sso/proxy/static", &controller.ProxyStaticController{})
 	beego.Router("/v1/sso/proxy/api", &controller.ProxySubsystemApiController{})
 
+	filter.AddMatchRoute("/", true)
+	filter.AddMatchRoute("/v1/sso", true)
+	filter.AddMatchRoute("/v1/sso/auth", true)
+	filter.AddMatchRoute("/v1/sso/identify", true)
+
 	// 读取本地静态资源配置表，注册静态资源
 	utils.RegisterStaticDir()
 

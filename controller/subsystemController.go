@@ -3,11 +3,11 @@ package controller
 import (
 	"encoding/json"
 
+	"github.com/asofdate/sso-core/entity"
+	"github.com/asofdate/sso-core/service/impl"
 	"github.com/asofdate/sso-jwt-auth/utils/hret"
 	"github.com/asofdate/sso-jwt-auth/utils/i18n"
 	"github.com/asofdate/sso-jwt-auth/utils/jwt"
-	"github.com/asofdate/sso-core/entity"
-	"github.com/asofdate/sso-core/service/impl"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
@@ -84,6 +84,7 @@ func (this *SubsystemController) parseHttpRequest() (entity.SsoSubsystemEntity, 
 	subsystemEntity.RemotePort = form.Get("remotePort")
 	subsystemEntity.RemoteScheme = form.Get("remoteScheme")
 	subsystemEntity.RemoteHost = form.Get("remoteHost")
+	subsystemEntity.PrefixUrl = form.Get("prefixUrl")
 	jclaim, err := jwt.GetJwtClaims(this.Ctx.Request)
 	if err != nil {
 		logs.Error(err)

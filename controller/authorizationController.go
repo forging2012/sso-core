@@ -9,13 +9,14 @@ import (
 
 	"io/ioutil"
 
-	"github.com/asofdate/sso-jwt-auth/hrpc"
-	"github.com/asofdate/sso-jwt-auth/utils/jwt"
-	"github.com/asofdate/sso-jwt-auth/utils/logger"
-	"github.com/asofdate/sso-jwt-auth/utils/validator"
 	"github.com/asofdate/sso-core/dto"
 	"github.com/asofdate/sso-core/service"
 	"github.com/asofdate/sso-core/service/impl"
+	"github.com/asofdate/sso-jwt-auth/hrpc"
+	"github.com/asofdate/sso-jwt-auth/utils"
+	"github.com/asofdate/sso-jwt-auth/utils/jwt"
+	"github.com/asofdate/sso-jwt-auth/utils/logger"
+	"github.com/asofdate/sso-jwt-auth/utils/validator"
 	"github.com/astaxie/beego/context"
 )
 
@@ -33,55 +34,32 @@ func (this *AuthorizationController) AuthPage(ctx *context.Context) {
 }
 
 func (this *AuthorizationController) Logout(ctx *context.Context) {
-	jclaim, err := jwt.GetJwtClaims(ctx.Request)
-	if err != nil {
-		rdto := dto.AuthDto{
-			Username: "no connected",
-			RetCode:  434,
-			RetMsg:   "用户没有登录系统",
-		}
-		this.result(ctx.ResponseWriter, rdto)
-		return
-	}
 	cookie := http.Cookie{Name: "Authorization", Value: "", Path: "/", MaxAge: -1}
 	http.SetCookie(ctx.ResponseWriter, &cookie)
-	logoutdto := dto.AuthDto{
-		Username: jclaim.UserId,
-		RetCode:  200,
-		RetMsg:   "安全退出系统",
-	}
-	this.result(ctx.ResponseWriter, logoutdto)
+	ctx.ResponseWriter.Header().Set("Authorization", "")
 	return
 }
 
 func (this *AuthorizationController) Identify(ctx *context.Context) {
-	cookie, err := ctx.Request.Cookie("Authorization")
-	if err != nil {
-		token := ctx.Request.Header.Get("Authorization")
-		if validator.IsEmpty(token) || !jwt.CheckToken(token) {
-			ctx.Redirect(http.StatusTemporaryRedirect, "/v1/sso")
-			return
-		}
+
+	if !jwt.CheckToken(ctx.Request) {
 		this.result(ctx.ResponseWriter, dto.AuthDto{
-			Username: "",
-			RetCode:  200,
-			RetMsg:   "success",
+			Username: "**",
+			RetCode:  403,
+			RetMsg:   "用户连接已断开，请重新登录",
 		})
 		return
 	}
 
-	if jwt.CheckToken(cookie.Value) {
-		this.result(ctx.ResponseWriter, dto.AuthDto{
-			Username: "",
-			RetCode:  200,
-			RetMsg:   "success",
-		})
-		return
-	}
-	ctx.Redirect(http.StatusTemporaryRedirect, "/v1/sso")
+	this.result(ctx.ResponseWriter, dto.AuthDto{
+		Username: "**",
+		RetCode:  200,
+		RetMsg:   "success",
+	})
 	return
 }
 
+// 登录授权
 func (this *AuthorizationController) Auth(ctx *context.Context) {
 	ctx.Request.ParseForm()
 	form := ctx.Request.Form
@@ -152,8 +130,8 @@ func (this *AuthorizationController) Auth(ctx *context.Context) {
 		if err != nil || validator.IsEmpty(effectiveTime) {
 			et = 17280
 		}
-
-		token := jwt.GenToken(username, domainId, orgid, et)
+		reqIP := utils.GetRequestIP(ctx.Request)
+		token := jwt.GenToken(username, domainId, orgid, et, reqIP)
 		cookie := http.Cookie{Name: "Authorization", Value: token, Path: "/", MaxAge: int(et)}
 		http.SetCookie(ctx.ResponseWriter, &cookie)
 		retDto.RetMsg = token

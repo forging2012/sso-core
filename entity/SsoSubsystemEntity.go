@@ -10,4 +10,5 @@ type SsoSubsystemEntity struct {
 	CreateUser   string `json:"createUser"`
 	ModifyUser   string `json:"modifyUser"`
 	ServiceName  string `json:"serviceName"`
+	PrefixUrl    string `json:"prefixUrl"`
 }

@@ -43,6 +43,7 @@ func (this *SsoRouteServiceImpl) Get(registerUrl string, serviceCd string) (dto.
 	ssoService.RemoteScheme = srv.RemoteScheme
 	ssoService.RemoteHost = srv.RemoteHost
 	ssoService.RemotePort = srv.RemotePort
+	ssoService.PrefixUrl = srv.PrefixUrl
 	return ssoService, nil
 }
 
@@ -67,5 +68,6 @@ func (this *SsoRouteServiceImpl) GetProxyStatic(registerUrl string, serviceCd ..
 	ssoService.RemoteScheme = srv.RemoteScheme
 	ssoService.RemoteHost = srv.RemoteHost
 	ssoService.RemotePort = srv.RemotePort
+	ssoService.PrefixUrl = srv.PrefixUrl
 	return ssoService, nil
 }
