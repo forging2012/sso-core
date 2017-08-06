@@ -3,9 +3,9 @@ package impl
 import (
 	"errors"
 
-	"github.com/asofdate/sso-jwt-auth/utils/validator"
 	"github.com/asofdate/sso-core/dao"
 	"github.com/asofdate/sso-core/entity"
+	"github.com/asofdate/sso-jwt-auth/utils/validator"
 	"github.com/astaxie/beego/logs"
 	"github.com/hzwy23/dbobj"
 )
@@ -18,6 +18,7 @@ var ssoSql021 = `insert into sso_proxy_static_route(register_url,route_desc,crea
 var ssoSql022 = `delete from sso_proxy_static_route where uuid = ?`
 var ssoSql023 = `update sso_proxy_static_route set service_cd = ?, register_url = ?,remote_url = ?,route_desc = ?, modify_time = now(), modify_user = ? where uuid = ?`
 var ssoSql025 = `select register_url,route_desc,create_time,remote_url,create_user,modify_user,modify_time, uuid,service_cd from sso_proxy_static_route where register_url = ?`
+var ssoSql026 = `select register_url,route_desc,create_time,remote_url,create_user,modify_user,modify_time, uuid,service_cd from sso_proxy_static_route where register_url = ? and service_cd = ?`
 
 func NewSsoProxyStaticRouteDao() dao.SsoProxyStaticRouteDao {
 	return &SsoProxyStaticRoute{}
@@ -25,6 +26,10 @@ func NewSsoProxyStaticRouteDao() dao.SsoProxyStaticRouteDao {
 
 func (this *SsoProxyStaticRoute) GetDetails(registerUrl string, serviceCd ...string) (entity.SsoProxyStaticRoute, error) {
 	var ret entity.SsoProxyStaticRoute
+	if len(serviceCd) == 1 && len(serviceCd[0]) != 0 {
+		err := dbobj.QueryForStruct(ssoSql026, &ret, registerUrl, serviceCd[0])
+		return ret, err
+	}
 	err := dbobj.QueryForStruct(ssoSql025, &ret, registerUrl)
 	return ret, err
 }

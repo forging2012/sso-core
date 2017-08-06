@@ -2,19 +2,17 @@ package filter
 
 import (
 	"crypto/tls"
-	"fmt"
+	"html/template"
 	"net/http"
 	"net/http/httputil"
 	"path"
 
-	"html/template"
-
 	"github.com/asofdate/sso-core/service/impl"
 	"github.com/asofdate/sso-jwt-auth/utils/hret"
 	"github.com/asofdate/sso-jwt-auth/utils/jwt"
+	"github.com/asofdate/sso-jwt-auth/utils/logger"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"github.com/astaxie/beego/logs"
 )
 
 var ssoRouteService = impl.NewSsoRouteService()
@@ -29,9 +27,9 @@ func SsoReverProxy(ctx *context.Context) {
 
 		ssoEntity, err := ssoRouteService.Get(ctx.Request.URL.Path, serviceCd)
 		if err != nil || len(ssoEntity.RemoteUrl) == 0 {
-			ssoEntity, err = ssoRouteService.GetProxyStatic(ctx.Request.URL.Path)
+			ssoEntity, err = ssoRouteService.GetProxyStatic(ctx.Request.URL.Path, serviceCd)
 			if err != nil || len(ssoEntity.RemoteUrl) == 0 {
-				logs.Error("没有被注册的路由", ctx.Request.URL)
+				logger.Error("没有被注册的路由", ctx.Request.URL)
 				hret.Error(ctx.ResponseWriter, 404, "没有被注册的路由")
 				return
 			}
@@ -42,6 +40,7 @@ func SsoReverProxy(ctx *context.Context) {
 			req.URL.Path = path.Join(ssoEntity.PrefixUrl, ssoEntity.RemoteUrl)
 			req.URL.Scheme = ssoEntity.RemoteScheme
 			req.URL.Host = ssoEntity.RemoteHost + ":" + ssoEntity.RemotePort
+			logger.Debug("proxy route is:", req.URL)
 		}
 
 		proxy := &httputil.ReverseProxy{
@@ -56,7 +55,7 @@ func SsoReverProxy(ctx *context.Context) {
 					// TODO
 					// 反向代理路发生重定向，
 					// 后台暂时没有处理重定向请求，需要前端自行处理
-					fmt.Println("redirect", location, err)
+					logger.Debug("redirect", location, err)
 				}
 				return nil
 			}}
@@ -72,7 +71,7 @@ func SsoReverProxy(ctx *context.Context) {
 	}
 
 	// 系统内部路由连接校验
-	if !jwt.CheckToken(ctx.Request ) {
+	if !jwt.CheckToken(ctx.Request) {
 		hz, _ := template.ParseFiles("./views/sso/disconnect.tpl")
 		hz.Execute(ctx.ResponseWriter, nil)
 	}

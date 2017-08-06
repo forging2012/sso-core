@@ -26,6 +26,7 @@ func Register() {
 	beego.Router("/v1/sso/proxy/static", &controller.ProxyStaticController{})
 	beego.Router("/v1/sso/proxy/api", &controller.ProxySubsystemApiController{})
 
+	// 注册无需校验token的路由
 	filter.AddMatchRoute("/", true)
 	filter.AddMatchRoute("/v1/sso", true)
 	filter.AddMatchRoute("/v1/sso/auth", true)
